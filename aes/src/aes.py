@@ -19,6 +19,9 @@ def pkcs7_padding(data: bytes, block_size: int) -> bytes:
     padding = bytes([padding_length] * padding_length)
     return data + padding
 
+def pkcs7_padding_undo():
+    pass
+
 ## ENCRYPTION ##
 def sub_bytes(block: list) -> list:
     """Apply SubBytes transformation to the block."""
@@ -34,13 +37,19 @@ def sub_bytes_inv(block: list) -> list:
 
 def rot_bytes(block: list) -> list:
     """Rotate the bytes in the block to the left by one position."""
-    return block[1:] + [block[0]]
+    return block[1:] + block[:1]
 
-def shift_rows(block: list):
+def shift_rows(block: list) -> list:
     """Shift the rows in the block according to AES specifications."""
     block[1] = [block[1][(i + 1) % 4] for i in range(4)] # row 1 shifts 1
     block[2] = [block[2][(i + 2) % 4] for i in range(4)] # row 2 shifts 2
     block[3] = [block[3][(i + 3) % 4] for i in range(4)] # row 3 shifts 3
+
+def shift_rows_inverse(block: list) -> list:
+    """Inverse ShiftRows transformation for decryption."""
+    block[1] = [block[1][(i - 1) % 4] for i in range(4)]  # row 1 shifts 1 position to the right
+    block[2] = [block[2][(i - 2) % 4] for i in range(4)]  # row 2 shifts 2 positions to the right
+    block[3] = [block[3][(i - 3) % 4] for i in range(4)]  # row 3 shifts 3 positions to the right
 
 def mix_columns(block: list) -> list:
     """Apply MixColumns transformation to a single column of the block."""
@@ -74,7 +83,6 @@ def key_expansion(key: list) -> list:
     """Expand the key to be used in encryption."""
     expanded_key = to_matrix(key)  # 4x4 matrix
 
-    # expansion
     byte_len = len(expanded_key)
     num_rounds = {4: 10, 6: 12, 8: 14}[byte_len]
 
@@ -113,42 +121,15 @@ def encrypt_block(block: list, key: list) -> list:
 
     return to_bytes(block)
 
-def decrypt_block(block: list, key: list) -> list:
-    """Decrypt a 16-byte block using the key."""
-    block = to_matrix(block)
-    num_rounds = len(key) - 1
-
-    add_round(block, key[-1]) # opperates on the last character now
-
-    # decryption works backwards
-    for i in range(num_rounds - 1, 0, -1):
-        shift_rows(block)
-        block = [sub_bytes_inv(b) for b in block]
-        add_round(block, key[i])
-        mix_columns_inverse(block)
-    
-    shift_rows(block)
-    block = [sub_bytes_inv(b) for b in block]
-    add_round(block, key[0])
-
-    return to_bytes(block)
-
 def encrypt(text: str, key: str):
     """Encrypt the given text using the key."""
     text_bytes = text.encode('utf-8')
     key_bytes = key.encode('utf-8')
 
     padded_text = pkcs7_padding(text_bytes, 16)
-    padded_key = pkcs7_padding(key_bytes, 16)
-    expanded_key = key_expansion(list(padded_key))
+    expanded_key = key_expansion(list(key_bytes))
 
-    # encrypted_blocks = []
-
-    # # Each 16 bytes (128 bits) form a block in the encrypted text
-    # for index in range(0, len(text), 16):
-    #     block = padded_text[index: index + 16] # Take 16 bytes for encryption
-    #     encrypted_blocks.extend(encrypt_block(block, expanded_key)) # encrypts the block
-
+    # Each 16 bytes (128 bits) form a block in the encrypted text
     encrypted_bytes = encrypt_block(padded_text, expanded_key)
 
     # encrypted_bytes = bytes(encrypted_blocks) # to bytes list
@@ -157,34 +138,56 @@ def encrypt(text: str, key: str):
 
     return encrypted_text
 
+def decrypt_block(block: list, key: list) -> list:
+    """Decrypt a 16-byte block using the key."""
+    block = to_matrix(block)
+    num_rounds = len(key) - 1
+
+    add_round(block, key[-1]) # opperates on the last character now
+
+    shift_rows_inverse(block)
+    block = [sub_bytes_inv(b) for b in block]
+
+    # decryption works backwards
+    for i in range(num_rounds - 1, 0, -1):
+        add_round(block, key[i])
+        mix_columns_inverse(block)
+        shift_rows_inverse(block)
+        block = [sub_bytes_inv(b) for b in block]
+    
+    add_round(block, key[0])
+
+    return to_bytes(block)
+
 def decrypt(text: str, key: str):
     """Decrypt the given encrypted text using the key."""
-    text_bytes = text.encode('utf-8')
+    text_bytes = base64.b64decode(text)  # Decode base64 before decryption
     key_bytes = key.encode('utf-8')
 
     padded_key = pkcs7_padding(key_bytes, 16)
     expanded_key = key_expansion(list(padded_key))
 
-    decrypted_blocks = []
-
     # Each 16 bytes (128 bits) form a block in the encrypted text
-    for index in range(0, len(text_bytes), 16):
-        block = text_bytes[index: index + 16]  # Take 16 bytes for decryption
-        decrypted_blocks.extend(decrypt_block(block, expanded_key))
+    decrypted_bytes = decrypt_block(text_bytes, expanded_key)
 
-    # Combine the decrypted blocks and remove padding
-    decrypted_bytes = b"".join(decrypted_blocks)
+    # Remove padding based on the last byte
     padding_length = decrypted_bytes[-1]
     decrypted_text = decrypted_bytes[:-padding_length].decode('utf-8')
 
     return decrypted_text
 
 ## TEST ##
-key = "a"
-text = "hi"
+# information
+key = "8k6L5zkwStZxVGzX" # Set the key to your desired key (e.g., '8k6L5zkwStZxVGzX')
+text = "hello world" # Set the text to whatever you want
 
+# process
 encrypted_text = encrypt(text, key)
-print(encrypted_text)
-
 # decrypted_text = decrypt(encrypted_text, key)
-# print(decrypted_text)
+
+# output
+print("### AES TEST ###")
+print(f"Information\n\tKey:\t{key}\n\tText:\t{text}")
+print(f"Encrypted:\t{encrypted_text}")
+# print(f"Decrypted:\t{decrypted_text}")
+print(f"Decrypted:\tNA")
