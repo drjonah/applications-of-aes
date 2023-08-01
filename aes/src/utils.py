@@ -18,7 +18,7 @@ def pkcs7_padding(data: bytes, block_size: int) -> bytes:
 def pkcs7_padding_undo():
     pass
 
-def galois_multiply(a, b):
+def galois(a, b):
     p = 0
     for _ in range(8):
         if b & 1:

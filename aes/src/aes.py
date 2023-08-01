@@ -1,6 +1,6 @@
 import base64
 from rijndael import RCON, SBOX, SBOX_INV
-from utils import to_matrix, to_bytes, pkcs7_padding, pkcs7_padding_undo, galois_multiply, record_time
+from utils import to_matrix, to_bytes, pkcs7_padding, pkcs7_padding_undo, galois, record_time
 
 ## AES ##
 class AES:
@@ -50,22 +50,35 @@ class AES:
         encrypted_text = encrypted_base64.decode('utf-8')
 
         return encrypted_text
+    
+    @record_time
+    def decrypt(self, text: str) -> str:
+        word_block_matrix = to_matrix(text.encode('utf-8')) # encodes to 4x4 matrix
+        # print(word_block_matrix)
+        # self.add_round(word_block_matrix, self.expanded_key[-4:])
 
     def rot_bytes(self, word_block: list) -> list:
         """Rotate the bytes in the block to the left by one position."""
         return word_block[1:] + word_block[:1]
     
-    def sub_bytes(self, word_block: list) -> list:
+    def sub_bytes(self, word_block: list, inverse=False) -> list:
         """Apply sub bytes transformation to the block."""
+        if inverse:
+            return [SBOX_INV[wb] for wb in word_block]
         return [SBOX[wb] for wb in word_block]
 
-    def shift_rows(self, block: list) -> None:
+    def shift_rows(self, word_block: list, inverse=False) -> None:
         """Shift the rows in the block according to AES specifications."""
-        block[1] = [block[1][1], block[1][2], block[1][3], block[1][0]] # shifts 1
-        block[2] = [block[2][2], block[2][3], block[2][0], block[2][1]] # shifts 2
-        block[3] = [block[3][3], block[3][0], block[3][1], block[3][2]] # shifts 3
+        if inverse:
+            word_block[1] = [word_block[1][3], word_block[1][0], word_block[1][1], word_block[1][2]] # shifts -1
+            word_block[2] = [word_block[2][2], word_block[2][3], word_block[2][0], word_block[2][1]] # shifts -2
+            word_block[3] = [word_block[3][1], word_block[3][2], word_block[3][3], word_block[3][0]] # shifts -3
+        else:
+            word_block[1] = [word_block[1][1], word_block[1][2], word_block[1][3], word_block[1][0]] # shifts 1
+            word_block[2] = [word_block[2][2], word_block[2][3], word_block[2][0], word_block[2][1]] # shifts 2
+            word_block[3] = [word_block[3][3], word_block[3][0], word_block[3][1], word_block[3][2]] # shifts 3
 
-    def mix_columns(sel, word_block_matrix: list) -> None:
+    def mix_columns(self, word_block_matrix: list, inverse=False) -> None:
         """Apply mix columns transformation to the block."""
         for i in range(4):
             s0 = word_block_matrix[i][0]
@@ -73,10 +86,16 @@ class AES:
             s2 = word_block_matrix[i][2]
             s3 = word_block_matrix[i][3]
 
-            word_block_matrix[i][0] = galois_multiply(s0, 2) ^ galois_multiply(s1, 3) ^ s2 ^ s3
-            word_block_matrix[i][1] = galois_multiply(s1, 2) ^ galois_multiply(s2, 3) ^ s3 ^ s0
-            word_block_matrix[i][2] = galois_multiply(s2, 2) ^ galois_multiply(s3, 3) ^ s0 ^ s1
-            word_block_matrix[i][3] = galois_multiply(s3, 2) ^ galois_multiply(s0, 3) ^ s1 ^ s2
+            if inverse: # inverse galois variable b= differs than a non inverse galois
+                word_block_matrix[i][0] = galois(s0, 0xE) ^ galois(s1, 0xB) ^ galois(s2, 0xD) ^ galois(s3, 0x9)
+                word_block_matrix[i][1] = galois(s1, 0xE) ^ galois(s2, 0xB) ^ galois(s3, 0xD) ^ galois(s0, 0x9)
+                word_block_matrix[i][2] = galois(s2, 0xE) ^ galois(s3, 0xB) ^ galois(s0, 0xD) ^ galois(s1, 0x9)
+                word_block_matrix[i][3] = galois(s3, 0xE) ^ galois(s0, 0xB) ^ galois(s1, 0xD) ^ galois(s2, 0x9)
+            else:
+                word_block_matrix[i][0] = galois(s0, 2) ^ galois(s1, 3) ^ s2 ^ s3
+                word_block_matrix[i][1] = galois(s1, 2) ^ galois(s2, 3) ^ s3 ^ s0
+                word_block_matrix[i][2] = galois(s2, 2) ^ galois(s3, 3) ^ s0 ^ s1
+                word_block_matrix[i][3] = galois(s3, 2) ^ galois(s0, 3) ^ s1 ^ s2
 
     def add_round(self, word_block_matrix: list, key: list) -> None:
         """Apply key schedule transformation to the block using the key."""
@@ -89,13 +108,21 @@ class AES:
 print("### AES EXECUTION ###")
 
 cipher128 = AES("8k6L5zkwStZxVGzX")
-encyrpted = cipher128.encrypt("hello world")
+encrypted = cipher128.encrypt("hello world")
+decrypted = cipher128.decrypt(encrypted)
 
 # cipher192 = AES("hwRhjC5s2YtACanDktuXKxte")
-# encyrpted = cipher192.encrypt("hello world")
+# encrypted = cipher192.encrypt("hello world")
 
 # cipher256 = AES("w6HYstMa2dAxututGRaE2KPHdck9h9qg")
-# encyrpted = cipher256.encrypt("hello world")
+# encrypted = cipher256.encrypt("hello world")
 
 print("### AES TESTS ###")
-print(f"Encrypted:\t{encyrpted}")
+print(f"Encrypted:\t{encrypted}")
+print(f"Decrypted:\t{decrypted}")
+
+## CREDITS ##
+# Government docs: 
+#   https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf 
+# Galois implentation
+#   http://blog.simulacrum.me/2019/01/aes-galois/
