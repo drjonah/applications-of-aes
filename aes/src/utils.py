@@ -9,9 +9,9 @@ def to_bytes(block: list) -> bytes:
     """Convert a 4x4 matrix to a 16-byte block."""
     return bytes(sum(block, []))
 
-def pkcs7_padding(data: bytes, block_size: int) -> bytes:
-    """Apply PKCS#7 padding to the data to make it a multiple of block_size."""
-    padding_length = block_size - len(data) % block_size
+def pkcs7_padding(data: bytes) -> bytes:
+    """Apply PKCS#7 padding to the data to make it a multiple of 16."""
+    padding_length = 16 - len(data) % 16
     padding = bytes([padding_length] * padding_length)
     return data + padding
 

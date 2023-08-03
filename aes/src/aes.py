@@ -10,10 +10,16 @@ class AES:
         self.rounds = {4: 10, 6: 12, 8: 14}[len(key) // 4] 
         self.expanded_key = self.key_schedule(key)
 
+        print(f"Original Key: {self.key} | len={len(self.key)}")
+        print(f"Expanded Key: {self.expanded_key}")
+
     @record_time
     def key_schedule(self, key: str) -> list:
         """Expand the key to be used in encryption."""
         expanded_key = to_matrix(list(key.encode("utf-8")))  # 4x4 matrix
+        # expanded_key = to_matrix([int(char, 16) for char in key])  # 4x4 matrix
+
+        print(expanded_key)
 
         for index in range(4, 4 * (self.rounds + 1)):
             word_block = expanded_key[index - 1] # 1 byte
@@ -30,7 +36,7 @@ class AES:
     @record_time
     def encrypt(self, text: str) -> str:
         """Encrypt the given text using the key."""
-        plaintext = pkcs7_padding(text.encode('utf-8'), 16) # encodes and adds padding
+        plaintext = pkcs7_padding(text.encode('utf-8')) # encodes and adds padding
         word_block_matrix = to_matrix(plaintext)
 
         self.add_round(word_block_matrix, self.expanded_key[:4])
@@ -107,7 +113,7 @@ class AES:
 ## TESTS ##
 print("### AES EXECUTION ###")
 
-cipher128 = AES("8k6L5zkwStZxVGzX")
+cipher128 = AES("0" * 16)
 encrypted = cipher128.encrypt("hello world")
 decrypted = cipher128.decrypt(encrypted)
 

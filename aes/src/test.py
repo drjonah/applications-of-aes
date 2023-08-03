@@ -11,7 +11,7 @@ def aes_encrypt(plaintext, key):
     ciphertext = cipher.encrypt(padded_plaintext)
     return ciphertext
 
-key = b"8k6L5zkwStZxVGzX"  # The key should be in bytes format
+key = b"0" * 16  # The key should be in bytes format
 plaintext = b"hello world"  # The plaintext should be in bytes format
 
 ciphertext = aes_encrypt(plaintext, key)
