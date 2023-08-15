@@ -15,8 +15,10 @@ def pkcs7_padding(data: bytes) -> bytes:
     padding = bytes([padding_length] * padding_length)
     return data + padding
 
-def pkcs7_padding_undo():
-    pass
+def pkcs7_padding_undo(data: bytes):
+    """Removes application of PKCS#7 padding."""
+    padding_length = data[-1]
+    return data[:-padding_length]
 
 def galois(a, b):
     p = 0
