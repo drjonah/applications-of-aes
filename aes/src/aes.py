@@ -27,7 +27,7 @@ class AES:
         return expanded_key # 44 word_blocks => 11 keys
 
     @record_time
-    def encrypt(self, text: str) -> str:
+    def encrypt(self, text: str) -> bytes:
         """Encrypt the given text using the key."""
         plaintext = pkcs7_padding(text.encode("utf-8")) # encodes and adds padding
         word_block_matrix = to_matrix(plaintext)
@@ -44,14 +44,11 @@ class AES:
         self.shift_rows(word_block_matrix)
         self.add_round(word_block_matrix, self.expanded_key[40:])
 
-        encrypted_base64 = base64.b64encode(to_bytes(word_block_matrix)) # to base64
-        encrypted_text = encrypted_base64.decode('utf-8')
-
-        return encrypted_text
+        return to_bytes(word_block_matrix)
     
     @record_time
-    def decrypt(self, text: str) -> str:
-        word_block_matrix = to_matrix(base64.b64decode(text.encode("utf-8"))) # encodes to 4x4 matrix
+    def decrypt(self, text: bytes) -> str:
+        word_block_matrix = to_matrix(text) # encodes to 4x4 matrix
 
         self.add_round(word_block_matrix, self.expanded_key[-4:])
         self.shift_rows(word_block_matrix, inverse=True)

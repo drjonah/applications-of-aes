@@ -1,12 +1,14 @@
+# path to aes
 import sys
 sys.path.append('../applications-of-aes')
 
+# packages
 from aes import AES
 
 ## AES TESTS ##
 print("### AES EXECUTION ###")
 
-plaintext = "a"
+plaintext = "Clive Staple SOH"
 key = "ABCDEFGHIJKLMNOP"
 
 cipher128 = AES(key)

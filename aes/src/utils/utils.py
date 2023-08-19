@@ -11,16 +11,16 @@ def to_bytes(block: list) -> bytes:
 
 def pkcs7_padding(data: bytes) -> bytes:
     """Apply PKCS#7 padding to the data to make it a multiple of 16."""
-    padding_length = 16 - len(data) % 16
+    padding_length = (16 - len(data)) % 16 # adds padding up to a len of 16
     padding = bytes([padding_length] * padding_length)
     return data + padding
 
 def pkcs7_padding_undo(data: bytes):
     """Removes application of PKCS#7 padding."""
-    padding_length = data[-1]
-    return data[:-padding_length]
+    return data[:-data[-1]] if data[-1] in range(1, 16) else data 
 
 def galois(a, b):
+    """Implementation of Galois field."""
     p = 0
     for _ in range(8):
         if b & 1:
@@ -38,6 +38,6 @@ def record_time(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"{func.__name__}:\t{execution_time:.6f} seconds")
+        print(f"* {func.__name__}:\t{execution_time:.6f} seconds")
         return result
     return wrapper
