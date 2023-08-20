@@ -14,9 +14,6 @@ def is_file(file_name: str) -> bool:
 @record_time
 def encrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
     """Encrypts a .txt file and writes to a .bin file."""
-    if not is_file(file_in) or not is_file(file_out):
-        return False
-
     with open(file_in, "r") as FILE_READ:
         with open(file_out, "wb") as FILE_WRITE:
             for parse_line in FILE_READ.readlines():
@@ -31,9 +28,6 @@ def encrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
 
 def decrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
     """Decrypts a .bin file and writes to a .txt file."""
-    if not is_file(file_in) or not is_file(file_out):
-        return False
-
     with open(file_in, "rb") as FILE_READ:
         with open(file_out, "w") as FILE_WRITE:
             for parse_line in FILE_READ.readlines():
@@ -46,26 +40,30 @@ def decrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
 
     return True
 
-def main(file_decoded_in: str, file_decoded_out: str, file_encoded_in: str, file_encoded_out: str, encrypt: bool) -> None:
+def main(encrypt: bool, file: str, file_out=None) -> None:
     """Main function that handles arguments and produces output"""
-    aes_key = load_encryption_key() # gets key from config.json for encryption
-    aes = AES(aes_key) # creates AES object for encryption / decryption
+    # optional param to specify existing output location, default is to create a new file
+    assert is_file(file), "Specified input file does not exist."
+    if file_out is None:
+        file_out = file[:-4] + "_output." + ("bin" if encrypt else "txt") # creates path for file output
+    else:
+        assert is_file(file_out), "Specified output file does not exist."
 
-    file_in, file_out = [file_decoded_in, file_encoded_out] if encrypt else [file_encoded_in, file_decoded_out]
-    status = encrypt_file(aes, file_in, file_out) if encrypt else decrypt_file(aes, file_in, file_out)
+    # creates AES object for encryption / decryption
+    aes_key = load_encryption_key() # gets key from config.json for encryption
+    aes = AES(aes_key)
+
+    status = encrypt_file(aes, file, file_out) if encrypt else decrypt_file(aes, file, file_out)
     if status:
-        print("File encryption success.") if encrypt else print("File decryption success.")
-        print(f"Output of \"{file_in}\" found in \"{file_out}\"")
+        print("File encryption success." if encrypt else "File decryption success.")
+        print(f"Output of \"{file}\" found in \"{file_out}\"")
     else:
         print("Error converting file. Make sure that the file exist.")
 
-
 if __name__ == "__main__":
-    file_decoded_in = "./apps/textfiles/src/file_decoded_in.txt" # text file (input)
-    file_decoded_out = "./apps/textfiles/src/file_decoded_out.txt" # text file (output)
-    file_encoded_in = "./apps/textfiles/src/file_encoded_in.bin" # binary file (input)
-    file_encoded_out = "./apps/textfiles/src/file_encoded_out.bin" # binary file (output)
-
-    encrypt = False # true = encrypt file (file_decoded_in => file_encoded_out), false = decrypt file (file_encoded_in => file_decoded_out)
-
-    main(file_decoded_in, file_decoded_out, file_encoded_in, file_encoded_out, encrypt)
+    file_text = "apps/textfiles/src/file_text.txt" # text file (input)
+    file_binary = "apps/textfiles/src/file_binary.bin" # binary file (input)
+    encrypt = False # true = encrypt file (file_text.txt => file_text_out.bin), false = decrypt file (file_binary.bin => file_binary_out.txt)
+    file = file_text if encrypt else file_binary # logic to deside file
+    # main
+    main(encrypt, file)
