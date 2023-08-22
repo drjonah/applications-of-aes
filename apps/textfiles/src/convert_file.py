@@ -64,6 +64,6 @@ if __name__ == "__main__":
     file_text = "apps/textfiles/src/file_text.txt" # text file (input)
     file_binary = "apps/textfiles/src/file_binary.bin" # binary file (input)
     encrypt = False # true = encrypt file (file_text.txt => file_text_out.bin), false = decrypt file (file_binary.bin => file_binary_out.txt)
-    file = file_text if encrypt else file_binary # logic to deside file
+    file = file_text if encrypt else file_binary # logic to decide file
     # main
     main(encrypt, file)
