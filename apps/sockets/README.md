@@ -1,6 +1,7 @@
 # Socket Chat Application
 
 This is a simple socket-based chat application consisting of a server and client script. The server allows multiple clients to connect and exchange messages securely using AES encryption.
+![image](https://github.com/drjonah/applications-of-aes/assets/68826473/f9b65f44-9ab2-4d0a-8baf-8fe0f086f3d0)
 
 ## Features
 
