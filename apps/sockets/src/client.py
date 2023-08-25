@@ -1,14 +1,11 @@
 
-import socket, threading
+import socket, threading, json
 import sys
 sys.path.append('../applications-of-aes') # path to aes
 
 # local packages
 from aes import AES
 from apps.utils import load_encryption_key, load_chunks
-
-HOST = "127.0.0.1"
-PORT = 7700
 
 class Client:
     def __init__(self, host: str, port: int, user_name: str) -> None:
@@ -48,7 +45,6 @@ class Client:
             # checks to see if user wants to disconnect
             if data_input == "exit":
                 break
-            
             data = f"[{self.user_name}] {data_input}" # adds username to encryption
 
             # encrypts the data to send
@@ -83,8 +79,9 @@ class Client:
 
 def main():
     user_name = input("Enter name: ")
-
-    client = Client(HOST, PORT, user_name)
+    server_data = json.load(open("apps/sockets/config.json")) # opens data from config
+    # client object
+    client = Client(server_data["Host"], server_data["Port"], user_name)
     client.run()
 
 if __name__ == "__main__":

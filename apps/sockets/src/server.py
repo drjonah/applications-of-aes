@@ -1,9 +1,5 @@
 
-import socket, threading
-
-HOST = "127.0.0.1"
-PORT = 7700
-MAX_CONNECTIONS = 5
+import socket, threading, json
 
 class Server:
     def __init__(self, host: str, port: int, max_connections: int) -> None:
@@ -54,6 +50,7 @@ class Server:
                 # allows the server to know when a client disconnects
                 if not data:
                     break
+                print(f"[{client_name}] {data}")
                 # Send the received data to all connected clients except the sender
                 for client in self.connected_users.keys():
                     if client != client_socket:
@@ -63,7 +60,9 @@ class Server:
             print(f"Client disconnected [{client_address}]")
 
 def main() -> None:
-    server = Server(HOST, PORT, MAX_CONNECTIONS)
+    server_data = json.load(open("apps/sockets/config.json")) # opens data from config
+    # server object
+    server = Server(server_data["Host"], server_data["Port"], 5)
     server.run()
 
 if __name__ == "__main__":
