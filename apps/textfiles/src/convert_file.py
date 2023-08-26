@@ -5,13 +5,12 @@ sys.path.append('../applications-of-aes') # path to aes
 
 # local packages
 from aes import AES
-from apps.utils import load_encryption_key, load_chunks, record_time
+from apps.utils import load_encryption_key, load_chunks
 
 def is_file(file_name: str) -> bool:
     """Ensures that the files exist."""
     return Path(file_name).is_file()
 
-@record_time
 def encrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
     """Encrypts a .txt file and writes to a .bin file."""
     with open(file_in, "r") as FILE_READ:
@@ -22,7 +21,7 @@ def encrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
 
                 for chunk in chunks: new_line += aes.encrypt(chunk)
 
-                FILE_WRITE.write(new_line)
+                FILE_WRITE.write(new_line + b"\n")
 
     return True
 
@@ -32,7 +31,7 @@ def decrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
         with open(file_out, "w") as FILE_WRITE:
             for parse_line in FILE_READ.readlines():
                 new_line = str()
-                chunks = load_chunks(parse_line)
+                chunks = load_chunks(parse_line.strip())
 
                 for chunk in chunks: new_line += aes.decrypt(chunk)
 
