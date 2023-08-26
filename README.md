@@ -44,9 +44,18 @@ To costumize the key used in the encrypting and decrypting process, you add it i
 
 **A:** Inside of `scripts/` there is a file titled "random_key.py".
 
+**Q: How do I run test cases with the AES algorithm?**
+
+**A:** Inside of `tests/` there are test files to utilize the AES algorithm.
+
+**Q: How do I execute the application files?**
+
+**A:** Each application has its own README.md with instructions.
+
 ## Credits
 
 - [Government document](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf)
 - [Galois implementation](http://blog.simulacrum.me/2019/01/aes-galois/)
 - [Offical test vectors](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/AESAVS.pdf )
 - [My Stackoverflow question](https://stackoverflow.com/questions/76862154/why-is-my-aes-algorithm-not-producing-correct-output)
+- JUSTYN!!!

@@ -1,4 +1,3 @@
-import base64
 from aes.src.utils import *
 
 ## AES ##
@@ -13,56 +12,66 @@ class AES:
     def key_schedule(self, key: str) -> list:
         """Expand the key to be used in encryption."""
         expanded_key = to_matrix(list(key.encode("utf-8")))  # 4x4 matrix
+        iteration_size = len(key) // 4 # Number of words in the key (4 bytes per word)
 
-        for index in range(4, 4 * (self.rounds + 1)):
-            current_word_block = expanded_key[index - 1] # 1 byte
-            if index % 4 == 0:
-                current_word_block = self.sub_bytes(self.rot_bytes(current_word_block)) # Rot & Sub
-                current_word_block[0] ^= RCON[index // 4] # RCON
-            # elif self.rounds > 6 and self.rounds % 4 == 4: # 256
-            #     current_word_block = self.sub_bytes(current_word_block)
-            current_word_block = [i ^ j for i, j in zip(current_word_block, expanded_key[index - 4])] # XOR
-            expanded_key.append(current_word_block)
+        # Loop to generate round keys
+        for index in range(len(expanded_key), 4 * (self.rounds + 1)):
+            current_word_block = expanded_key[-1] # 1 word block (last of list)
+            
+            if len(expanded_key) % iteration_size == 0:
+                current_word_block = self.sub_bytes(self.rot_bytes(current_word_block)) # Apply Rot & Sub
+                current_word_block[0] ^= RCON[index // iteration_size] # Apply RCON
+
+            elif len(self.key) == 32 and len(expanded_key) % iteration_size == 4: # Special case for 256-bit key
+                current_word_block = self.sub_bytes(current_word_block)
+
+            # XOR the current word block with the word block at (current - iteration_size) position
+            current_word_block = [i ^ j for i, j in zip(current_word_block, expanded_key[-iteration_size])] # XOR
+            expanded_key.append(current_word_block) # Add generated word block to expanded key
 
         return expanded_key # 44 word_blocks => 11 keys
 
     @record_time
-    def encrypt(self, text: str) -> str:
+    def encrypt(self, text: str) -> bytes:
         """Encrypt the given text using the key."""
-        plaintext = pkcs7_padding(text.encode("utf-8")) # encodes and adds padding
-        word_block_matrix = to_matrix(plaintext)
+        plaintext = pkcs7_padding(text.encode("utf-8")) # Encodes and adds padding
+        word_block_matrix = to_matrix(plaintext) # Convert the padded text to a (decimal) matrix
 
+        # Initial round (just add_round)
         self.add_round(word_block_matrix, self.expanded_key[:4])
 
+        # Main encryption loop
         for index in range(1, self.rounds):
-            word_block_matrix = [self.sub_bytes(wb) for wb in word_block_matrix]
-            self.shift_rows(word_block_matrix)
-            self.mix_columns(word_block_matrix)
-            self.add_round(word_block_matrix, self.expanded_key[4 * index: 4 * (index + 1)])
+            word_block_matrix = [self.sub_bytes(wb) for wb in word_block_matrix] # Sub bytes
+            self.shift_rows(word_block_matrix) # Shift rows
+            self.mix_columns(word_block_matrix) # Mix columns
+            self.add_round(word_block_matrix, self.expanded_key[4 * index: 4 * (index + 1)]) # Add round
 
+        # Final round (all but mix_columns)
         word_block_matrix = [self.sub_bytes(wb) for wb in word_block_matrix]
         self.shift_rows(word_block_matrix)
-        self.add_round(word_block_matrix, self.expanded_key[40:])
+        self.add_round(word_block_matrix, self.expanded_key[-4:])
 
-        encrypted_base64 = base64.b64encode(to_bytes(word_block_matrix)) # to base64
-        encrypted_text = encrypted_base64.decode('utf-8')
-
-        return encrypted_text
+        # Convert (decimal) matrix back to bytes
+        return to_bytes(word_block_matrix)
     
     @record_time
-    def decrypt(self, text: str) -> str:
-        word_block_matrix = to_matrix(base64.b64decode(text.encode("utf-8"))) # encodes to 4x4 matrix
+    def decrypt(self, text: bytes) -> str:
+        word_block_matrix = to_matrix(text) # Converts bytes to a (deciaml) matrix
 
+        # Initial round (all but mix_columns)
         self.add_round(word_block_matrix, self.expanded_key[-4:])
         self.shift_rows(word_block_matrix, inverse=True)
         word_block_matrix = [self.sub_bytes(wb, inverse=True) for wb in word_block_matrix]
 
+        # Main decryption loop
         for index in range(self.rounds - 1, 0, -1):
-            self.add_round(word_block_matrix, self.expanded_key[4 * index: 4 * (index + 1)])
-            self.mix_columns(word_block_matrix, inverse=True)
-            self.shift_rows(word_block_matrix, inverse=True)
-            word_block_matrix = [self.sub_bytes(wb, inverse=True) for wb in word_block_matrix]
+            self.add_round(word_block_matrix, self.expanded_key[4 * index: 4 * (index + 1)]) # Add round
+            self.mix_columns(word_block_matrix, inverse=True) # Inverse mix columns
+            self.shift_rows(word_block_matrix, inverse=True) # Inverse shift rows
+            word_block_matrix = [self.sub_bytes(wb, inverse=True) for wb in word_block_matrix] # Inverse sub bytes
 
+        # Final round (just add_round)
         self.add_round(word_block_matrix, self.expanded_key[:4])
 
         plaintext = to_bytes(word_block_matrix)

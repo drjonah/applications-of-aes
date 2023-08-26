@@ -1,27 +1,29 @@
+# path to aes
 import sys
 sys.path.append('../applications-of-aes')
 
+# packages
 from aes import AES
 
 ## AES TESTS ##
-print("### AES EXECUTION ###")
 
-plaintext = "a"
-key = "ABCDEFGHIJKLMNOP"
+plaintext = "Q2wE4rT6yU8iOpAs"
 
-cipher128 = AES(key)
-encrypted = cipher128.encrypt(plaintext)
-decrypted = cipher128.decrypt(encrypted)
+key128 = "ABCDEFGHIJKLMNOP"
+key192 = "hwRhjC5s2YtACanDktuXKxte"
+key256 = "w6HYstMa2dAxututGRaE2KPHdck9h9qg"
 
-# cipher192 = AES("hwRhjC5s2YtACanDktuXKxte")
-# encrypted = cipher192.encrypt("hello world")
-# encrypted = cipher192.decrypt("hello world")
-
-# cipher256 = AES("w6HYstMa2dAxututGRaE2KPHdck9h9qg")
-# encrypted = cipher256.encrypt("hello world")
-# encrypted = cipher256.decrypt("hello world")
+keys = [key128, key192, key256]
 
 print("### AES TESTS ###")
-print(f"Information:\n\tKey = {key}\n\tText = {plaintext}")
-print(f"Encrypted:\t{encrypted}")
-print(f"Decrypted:\t{decrypted}")
+print(f"Text = {plaintext}\n")
+
+for key in keys:
+    cipher = AES(key) # Key expansion
+    print(f"Key = {key} ({len(key)})")
+
+    encrypted = cipher.encrypt(plaintext) # Encyrpt
+    print(f"Encrypted:\t{encrypted}")
+
+    decrypted = cipher.decrypt(encrypted) # Decrypt
+    print(f"Decrypted:\t{decrypted}\n")
