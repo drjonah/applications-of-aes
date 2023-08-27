@@ -21,7 +21,7 @@ def encrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
 
                 for chunk in chunks: new_line += aes.encrypt(chunk)
 
-                FILE_WRITE.write(new_line + b"\n")
+                FILE_WRITE.write(new_line)
 
     return True
 
@@ -29,13 +29,12 @@ def decrypt_file(aes: AES, file_in: str, file_out: str) -> bool:
     """Decrypts a .bin file and writes to a .txt file."""
     with open(file_in, "rb") as FILE_READ:
         with open(file_out, "w") as FILE_WRITE:
-            for parse_line in FILE_READ.readlines():
-                new_line = str()
-                chunks = load_chunks(parse_line.strip())
-
-                for chunk in chunks: new_line += aes.decrypt(chunk)
-
-                FILE_WRITE.write(new_line)
+            # loop that reads the binary file and decrypts it on chunks of 16 bytes
+            while True:
+                chunk = FILE_READ.read(16)
+                if not chunk:
+                    break
+                FILE_WRITE.write(aes.decrypt(chunk))
 
     return True
 
@@ -61,8 +60,8 @@ def main(encrypt: bool, file: str, file_out=None) -> None:
 
 if __name__ == "__main__":
     file_text = "apps/textfiles/src/file_text.txt" # text file (input)
-    file_binary = "apps/textfiles/src/file_binary.bin" # binary file (input)
-    encrypt = False # true = encrypt file (file_text.txt => file_text_out.bin), false = decrypt file (file_binary.bin => file_binary_out.txt)
+    file_binary = "apps/textfiles/src/file_binary.bin" # text file (input)
+    encrypt = True # true = encrypt file (file_text.txt => file_text_out.bin), false = decrypt file (file_binary.bin => file_binary_out.txt)
     file = file_text if encrypt else file_binary # logic to decide file
     # main
     main(encrypt, file)
