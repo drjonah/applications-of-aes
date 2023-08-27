@@ -11,13 +11,3 @@ def load_chunks(input) -> list:
     for index in range(0, len(input), 16):
         chunks.append(input[index: index + 16])
     return chunks
-
-def record_time(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"* {func.__name__}:\t{execution_time:.6f} seconds")
-        return result
-    return wrapper

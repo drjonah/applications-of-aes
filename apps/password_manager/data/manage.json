@@ -1,0 +1,19 @@
+{
+    "manage": {
+        "Target": [
+            {
+                "TARGETking": "apps/password_manager/data/encrypted/FLLM2MMENH.bin"
+            }
+        ],
+        "Tesla": [
+            {
+                "IWishIHadOne": "apps/password_manager/data/encrypted/EGQQXRTZNQ.bin"
+            }
+        ],
+        "Google": [
+            {
+                "futureGoogler@gmail.com": "apps/password_manager/data/encrypted/NVDK9CSB17.bin"
+            }
+        ]
+    }
+}
