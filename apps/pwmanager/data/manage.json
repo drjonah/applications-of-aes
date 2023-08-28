@@ -1,0 +1,24 @@
+{
+    "manage": {
+        "Target": [
+            {
+                "TARGETking": "apps/pwmanager/data/encrypted/FLLM2MMENH.bin"
+            }
+        ],
+        "Tesla": [
+            {
+                "IWishIHadOne": "apps/pwmanager/data/encrypted/EGQQXRTZNQ.bin"
+            }
+        ],
+        "Google": [
+            {
+                "futureGoogler@gmail.com": "apps/pwmanager/data/encrypted/NVDK9CSB17.bin"
+            }
+        ],
+        "CPP": [
+            {
+                "abcd@cpp.edu": "apps/pwmanager/data/encrypted/PT00YJ738F.bin"
+            }
+        ]
+    }
+}

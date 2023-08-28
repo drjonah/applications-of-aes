@@ -2,6 +2,8 @@
 
 A simple command-line password manager that securely stores and manages your passwords and usernames. It utilizes AES (Avanced Encryption System) encryption to keep your data safe. The manager allows you to add, remove, and view your stored data.
 
+![alt text](https://user-images.githubusercontent.com/68826473/263855280-ee774bc4-83a0-4bc4-8741-9223b7e3d2e5.png)
+
 ## Getting Started
 
 ### Prerequisites
