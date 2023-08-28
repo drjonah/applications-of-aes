@@ -2,17 +2,22 @@
     "manage": {
         "Target": [
             {
-                "TARGETking": "apps/password_manager/data/encrypted/FLLM2MMENH.bin"
+                "TARGETking": "apps/pwmanager/data/encrypted/FLLM2MMENH.bin"
             }
         ],
         "Tesla": [
             {
-                "IWishIHadOne": "apps/password_manager/data/encrypted/EGQQXRTZNQ.bin"
+                "IWishIHadOne": "apps/pwmanager/data/encrypted/EGQQXRTZNQ.bin"
             }
         ],
         "Google": [
             {
-                "futureGoogler@gmail.com": "apps/password_manager/data/encrypted/NVDK9CSB17.bin"
+                "futureGoogler@gmail.com": "apps/pwmanager/data/encrypted/NVDK9CSB17.bin"
+            }
+        ],
+        "CPP": [
+            {
+                "abcd@cpp.edu": "apps/pwmanager/data/encrypted/PT00YJ738F.bin"
             }
         ]
     }

@@ -111,8 +111,8 @@ class Manager:
 
 def main() -> None:
     # config
-    manager_path = "apps/password_manager/data/manage.json" # path to json manager
-    encrypted_path = "apps/password_manager/data/encrypted" # path to encrypted password folder
+    manager_path = "apps/pwmanager/data/manage.json" # path to json manager
+    encrypted_path = "apps/pwmanager/data/encrypted" # path to encrypted password folder
 
     manager = Manager(manager_path, encrypted_path) # manager object
     commands = "\n# 0: add data, 1: remove data, 2: view data, 3: exit" # string of commands for user
