@@ -32,6 +32,16 @@ def galois(a, b):
         b >>= 1
     return p % 256
 
+def xor(a, b) -> bytes:
+    return bytes(i ^ j for i, j in zip(a, b))
+
+def load_chunks(input) -> list:
+    """Creates blocks of data in chunks of 16 characters of bytes."""
+    chunks = []
+    for index in range(0, len(input), 16):
+        chunks.append(input[index: index + 16])
+    return chunks
+
 def record_time(func):
     def wrapper(*args, **kwargs):
         start_time = time.time()

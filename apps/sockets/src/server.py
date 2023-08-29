@@ -56,6 +56,11 @@ class Server:
                     if client != client_socket:
                         client.send(data) # message
 
+            # Notify all clients when someone disconnects
+            for client in self.connected_users.keys():
+                if client != client_socket:
+                    client.send(f"[Server] {client_name} has disconnected.".encode())
+
             del self.connected_users[client_socket]
             print(f"Client disconnected [{client_address}]")
 
