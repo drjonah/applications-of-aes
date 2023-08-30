@@ -145,8 +145,7 @@ def main() -> None:
             # invalid input
             else: print("\n# Must input 0, 1, 2, or 3...")
         except Exception as e:
-            print(e)
-            print("Possible errors with en/decryption are differing use of Key/IV.")
+            print(f"{e}\nPossible errors with en/decryption are differing use of Key/IV.")
 
 
 if __name__ == "__main__":

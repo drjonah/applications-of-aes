@@ -35,8 +35,7 @@ class AES:
 
     def encrypt_block(self, text: bytes) -> bytes:
         """Encrypt a 16 byte block using standard AES."""
-        plaintext = pkcs7_padding(text) # Encodes and adds padding
-        word_block_matrix = to_matrix(plaintext) # Convert the padded text to a (decimal) matrix
+        word_block_matrix = to_matrix(text) # Convert the padded text to a (decimal) matrix
 
         # Initial round (just add_round)
         self.add_round(word_block_matrix, self.expanded_key[:4])
@@ -53,8 +52,7 @@ class AES:
         self.shift_rows(word_block_matrix)
         self.add_round(word_block_matrix, self.expanded_key[-4:])
 
-        # Convert (decimal) matrix back to bytes
-        return to_bytes(word_block_matrix)
+        return to_bytes(word_block_matrix) # Convert (decimal) matrix back to bytes
 
     def decrypt_block(self, text: bytes) -> bytes:
         """Decrypt a 16 byte block using standard AES."""
@@ -75,24 +73,21 @@ class AES:
         # Final round (just add_round)
         self.add_round(word_block_matrix, self.expanded_key[:4])
 
-        plaintext = to_bytes(word_block_matrix)
-        original_text = pkcs7_padding_undo(plaintext)
-
-        return original_text
+        return to_bytes(word_block_matrix) # Convert (decimal) matrix back to bytes
 
     @record_time
     def encrypt(self, text: str, cbc=False, iv=None) -> bytes:
         """Encrypt the given text using the key. CBC is an option that uses an IV to add an extra layer of security."""
-        encoded_text = text.encode("utf-8")
-
-        chunks = load_chunks(encoded_text) # split incoming text into chunks of 16 bytes
+        encoded_text = text.encode("utf-8") # Encodes text
+        padded_text = pkcs7_padding(encoded_text) # Adds padding
+        text_chunks = load_chunks(padded_text) # split incoming text into chunks of 16 bytes
         encrypted_text = bytes() # variable for encrypted blocks to be added
 
         # check to see if cbc is being used and fetch an iv
         previous = (iv.encode("utf-8") if iv is not None else self.default_iv) if cbc else None # iv used for cbc 
 
         # main encryption loop
-        for chunk in chunks:
+        for chunk in text_chunks:
             if not cbc: 
                 encrypted_text += self.encrypt_block(chunk)
             else:
@@ -105,21 +100,23 @@ class AES:
     @record_time
     def decrypt(self, text: bytes, cbc=False, iv=None) -> str:
         """Decrypt the given bytes using the key. CBC is an option that uses an IV to add an extra layer of security."""
-        chunks = load_chunks(text) # split incoming text into chunks of 16 bytes
+        text_chunks = load_chunks(text) # split incoming text into chunks of 16 bytes
         decrypted_text = bytes() # variable for decrypted blocks to be added
 
         # check to see if cbc is being used and fetch an iv
         previous = (iv.encode("utf-8") if iv is not None else self.default_iv) if cbc else None # iv used for cbc 
 
         # main decryption loop
-        for chunk in chunks:
+        for chunk in text_chunks:
             if not cbc: 
                 decrypted_text += self.decrypt_block(chunk)
             else:
                 decrypted_text += xor(previous, self.decrypt_block(chunk)) # adds new chunk
                 previous = chunk # sets new previous
 
-        return decrypted_text.decode("utf-8")
+        original_text = pkcs7_padding_undo(decrypted_text) # Undo any added padding 
+
+        return original_text.decode("utf-8") # Decode text
 
     def rot_bytes(self, word_block: list) -> list:
         """Rotate the bytes in the block to the left by one position."""

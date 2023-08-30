@@ -16,14 +16,20 @@ def encrypt_file(args: list, file_in: str, file_out: str) -> bool:
     aes, cbc, iv = args
     with open(file_in, "r") as FILE_READ: # reads txt file
         with open(file_out, "wb") as FILE_WRITE: # writes bin file
-            for parse_line in FILE_READ.readlines(): # iterate through txt file
+            # write cbc differently than ecb because of the iv
+            if cbc:
                 try:
-                    new_line = aes.encrypt(parse_line, cbc, iv)
-                    FILE_WRITE.write(new_line) # writes the encrypted line
+                    FILE_WRITE.write(aes.encrypt(FILE_READ.read(), cbc, iv)) # writes the encrypted line
                 except Exception as e:
-                    print(e)
-                    print("Error encrypting line. Check if CBC and IV were used.")
-
+                    print(f"Encryption error: {e}")
+                    return False # ECB works as one string so all fails
+            else:
+                for parse_line in FILE_READ.readlines(): # iterate through txt file
+                    try:
+                        new_line = aes.encrypt(parse_line)
+                        FILE_WRITE.write(new_line) # writes the encrypted line
+                    except Exception as e:
+                        print(f"Encryption error: {e}")
     return True
 
 def decrypt_file(args: list, file_in: str, file_out: str) -> bool:
@@ -31,18 +37,23 @@ def decrypt_file(args: list, file_in: str, file_out: str) -> bool:
     aes, cbc, iv = args
     with open(file_in, "rb") as FILE_READ: # reads bin file
         with open(file_out, "w") as FILE_WRITE: # writes txt file
-            # loop that reads the binary file and decrypts it on chunks of 16 bytes
-            while True:
-                chunk = FILE_READ.read(16) # reads 16 bytes at a time
-                if not chunk: # breaks when there are no more cunks 
-                    break
+            # read cbc differently than ecb because of iv   
+            if cbc:
                 try:
-                    print(chunk)
-                    FILE_WRITE.write(aes.decrypt(chunk, cbc, iv)) # writes decrypted chunks to txt file 
+                    FILE_WRITE.write(aes.decrypt(FILE_READ.read(), cbc, iv)) # writes decrypted chunks to txt file 
                 except Exception as e:
-                    print(e)
-                    print("Error decrypting line. Check if CBC and IV were used.")
-
+                    print(f"Decryption error: {e}") 
+                    return False # ECB works as one string so all fails
+            else:
+                # loop that reads the binary file and decrypts it on chunks of 16 bytes
+                while True:
+                    chunk = FILE_READ.read(16) # reads 16 bytes at a time
+                    if not chunk: # breaks when there are no more cunks 
+                        break
+                    try:
+                        FILE_WRITE.write(aes.decrypt(chunk))
+                    except Exception as e:
+                        print(f"Decryption error: {e}")
     return True
 
 def main(file: str, file_out=None) -> None:
@@ -73,6 +84,12 @@ def main(file: str, file_out=None) -> None:
 
 
 if __name__ == "__main__":
-    file = "apps/textfiles/src/file_text.txt" # text file to encrypt
-    # file = "apps/textfiles/src/file_binary.bin" # text file to decrypt
+    # NOTE: Decryption erros are often due to CBC 
+    #   1. Unmatching IV used in encryption
+    #   2. Decrypting in ECB when it was encrypted in CBC
+
+    # file = "apps/textfiles/data/file_text_ecb.txt" # text file to encrypt (ECB)
+    # file = "apps/textfiles/data/file_text_ecb_output.bin" # text file to dencrypt (ECB)
+    # file = "apps/textfiles/data/file_text_cbc.txt" # text file to encrypt (CBC)
+    file = "apps/textfiles/data/file_text_cbc_output.bin" # text file to decrypt (CBC)
     main(file) # main method
