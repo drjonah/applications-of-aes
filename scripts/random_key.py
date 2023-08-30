@@ -9,7 +9,7 @@ def main(password_length: int) -> None:
 if __name__ == "__main__":
     """Run the file by copying into your terminal: python3 scripts/random_key.py --len {chose 16, 24, 32}"""
     # create the parser
-    parser = argparse.ArgumentParser(description='Fill flags file with functions')
+    parser = argparse.ArgumentParser(description='Generate a random key.')
     # add arguments
     parser.add_argument("--len", type=int, help="key length (16, 24, 32)", required=False)
     # parse the arguments

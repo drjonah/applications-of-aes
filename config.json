@@ -1,3 +1,5 @@
 {
-    "Key": "ABCDEFGHIJKLMNOP"
+    "Key": "ABCDEFGHIJKLMNOP",
+    "CBC": false,
+    "IV": "YQB1f5Nt7SNEXoaR"
 }

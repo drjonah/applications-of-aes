@@ -5,13 +5,15 @@ sys.path.append('../applications-of-aes') # path to aes
 
 # local packages
 from aes import AES
-from apps.utils import load_encryption_key, load_chunks
+from apps.utils import load_encryption_settings
 
 class Manager:
     def __init__(self, manager_path: str, encrypted_path: str) -> None:
         self.manager_path = manager_path # manager json path
         self.encrypted_path = encrypted_path # encrypted password path 
-        self.aes = AES(load_encryption_key()) # aes object
+
+        self.key, self.cbc, self.iv = load_encryption_settings() # load encryption settings
+        self.aes = AES(self.key) # aes object
 
     def load_manage_data(self) -> dict:
         """Loads the json data to instance of class."""
@@ -65,22 +67,16 @@ class Manager:
 
     def encrypt_data(self, data: str) -> bytes:
         """This takes a string and encrypts it based on blocks."""
-        encrypt_data = bytes() # byte variable for encrypted data to be added to
-        data_blocks = load_chunks(data) # grabs chunks based on data
+        encrypted_data = self.aes.encrypt(data, self.cbc, self.iv)
 
-        for block in data_blocks: encrypt_data += self.aes.encrypt(block) # encrypts chunks
-
-        return encrypt_data # returns the encrypted byte variable
+        return encrypted_data # returns the encrypted byte variable
     
     def decrypt_data(self, data: bytes) -> str:
         """This takes a string and decrypts it based on blocks."""
         # NOTE: This method only works with single line bin files which is applicable...for file conversion a while loop must be used
-        decrypt_data = str() # string variable to be added to
-        data_blocks = load_chunks(data) # grabs chunks based on data
+        decrypted_data = self.aes.decrypt(data, self.cbc, self.iv)
 
-        for block in data_blocks: decrypt_data += self.aes.decrypt(block) # decrypts chunks
-
-        return decrypt_data # returns the decrypted string variable
+        return decrypted_data # returns the decrypted string variable
     
     def display_locations(self) -> None:
         """Gets list of locations from manage.json"""
@@ -149,7 +145,7 @@ def main() -> None:
             # invalid input
             else: print("\n# Must input 0, 1, 2, or 3...")
         except Exception as e:
-            print(e)
+            print(f"{e}\nPossible errors with en/decryption are differing use of Key/IV.")
 
 
 if __name__ == "__main__":

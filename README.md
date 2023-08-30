@@ -5,6 +5,7 @@ Hello Everyone! When brainstorming potential projects, I stumbled upon cryptogra
 
 ## Table of contents
 
+- AES Versions
 - Requirements
 - Installation
 - Configuration
@@ -12,10 +13,13 @@ Hello Everyone! When brainstorming potential projects, I stumbled upon cryptogra
 - Credits
 
 
-## Requirements
+## AES Version
+### ECB (Electronic Code Block) [Default]
+This is the simplest form of AES encryption. This is the method where text is split into 16 byte code blocks and are encrypted separately. The downside of this method is it is the easiest method to reverse. Because every input has an identical outputs, patterns can be easily identified to those who know what to look for. This is known as having a lack of diffusion.
+### CBC (Chipher Block Chaining) [Secure]
+This is not the most advanced version of AES but it is way more secure than ECB because of one reason - initialization vectors. These vectors are encrypted into each code block. When the encryption begins, the plaintext is XORed this vector. The vector allows for more variation within each encryption. The vector must be the same for encrypting and decrypting.
 
-The applications of AES require the following modules:
-- [TBD](https://www.google.com/)
+## Requirements
 
 AES requires no modules outside the python library.
 
@@ -23,12 +27,11 @@ AES requires no modules outside the python library.
 ## Installation 
 
 1. Clone Repository: <br> `git clone https://github.com/drjonah/applications-of-aes.git`
-2. Install Dependancies: <br> `pip install -r requirements.txt`
 
 
 ## Configuration (required)
 
-To costumize the key used in the encrypting and decrypting process, you add it in `config.json`.
+To costumize the key used in the encrypting and decrypting process, you add it in `config.json`. There is also an option to costumize an initialization vector (IV). This is used when `cbc` is marked `true`. More information is found under `"AES Versions"`.
 
 
 ## FAQ
@@ -39,10 +42,15 @@ To costumize the key used in the encrypting and decrypting process, you add it i
 <br>      Key Length 16: 128 bts, 2^128 combinations
 <br>      Key Length 24: 192 bts, 2^192 combinations
 <br>      Key Length 32: 256 bts, 2^256 combinations
+<br>      Another way is a difference aes encryption version. This algorithm allows for CBC to be used. This can be changed in the same place as the key in `config.json`. Set `"CBC"` to `true` and make sure you have text in `IV`.
 
 **Q: How do I generate a random key?**
 
 **A:** Inside of `scripts/` there is a file titled "random_key.py".
+
+**Q: How do I generate a random initialization vector (IV)?**
+
+**A:** Inside of `scripts/` there is a file titled "random_iv.py".
 
 **Q: How do I run test cases with the AES algorithm?**
 

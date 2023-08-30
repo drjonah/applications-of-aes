@@ -5,7 +5,7 @@ sys.path.append('../applications-of-aes') # path to aes
 
 # local packages
 from aes import AES
-from apps.utils import load_encryption_key, load_chunks
+from apps.utils import load_encryption_settings
 
 class Client:
     def __init__(self, host: str, port: int, user_name: str) -> None:
@@ -13,7 +13,8 @@ class Client:
         self.port = port
         self.user_name = user_name
 
-        self.aes = AES(load_encryption_key()) # aes object
+        self.key, self.cbc, self.iv = load_encryption_settings() # load encryption settings
+        self.aes = AES(self.key) # aes object
 
         self.client_socket = socket.socket()
 
@@ -48,10 +49,7 @@ class Client:
             data = f"[{self.user_name}] {data_input}" # adds username to encryption
 
             # encrypts the data to send
-            byte_data = bytes()
-            data_chunks = load_chunks(data)
-            for chunk in data_chunks:
-                byte_data += self.aes.encrypt(chunk) # encrypts the data to send
+            byte_data = self.aes.encrypt(data, self.cbc, self.iv)
 
             self.client_socket.send(byte_data)
 
@@ -70,10 +68,7 @@ class Client:
                 print(data.decode())
             else:
                 # decrypts the data from the user
-                text_data = str()
-                data_chunks = load_chunks(data)
-                for chunk in data_chunks:
-                    text_data += self.aes.decrypt(chunk)
+                text_data = self.aes.decrypt(data, self.cbc, self.iv)
 
                 print(text_data)
 
