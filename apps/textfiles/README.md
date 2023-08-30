@@ -2,6 +2,8 @@
 
 This repository contains a Python script that demonstrates file encryption and decryption using the Advanced Encryption Standard (AES) algorithm.
 
+![image](https://user-images.githubusercontent.com/68826473/264472567-8c3403d3-08f4-4903-be9a-2421dabf93f1.png)
+
 ## Getting Started
 
 ### Prerequisites
